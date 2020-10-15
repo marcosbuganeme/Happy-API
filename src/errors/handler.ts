@@ -1,8 +1,24 @@
 import { ErrorRequestHandler, response } from 'express';
+import { ValidationError } from 'yup';
 
+interface ValidationErrors {
+  [key: string]: string[];
+}
 const errorHandler: ErrorRequestHandler = (error, request, response, next) => {
+  // mensagem de erro para validação de dados
+  if (error instanceof ValidationError) {
+    let errors: ValidationErrors = {};
+
+    error.inner.forEach((err) => {
+      errors[err.path] = err.errors;
+    });
+
+    return response.status(400).json({ message: 'Validation fails', errors });
+  }
+
   console.error(error);
 
+  // mensagem de erro para tratamento de exceções
   return response.status(500).json({ message: 'Internal server error' });
 };
 
