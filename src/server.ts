@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import cors from 'cors';
 
 // serve para lidar com erros/exceções async
 import 'express-async-errors';
@@ -7,10 +8,13 @@ import 'express-async-errors';
 import './database/connection';
 
 import routes from './routes';
+
+// Informando a mensagem de erro
 import errorHandler from './errors/handler';
 
 const app = express();
 
+app.use(cors());
 // serve para o express entender json, qnd passar no body
 app.use(express.json());
 app.use(routes);
