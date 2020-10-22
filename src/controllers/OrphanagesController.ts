@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
-import { getRepository } from 'typeorm';
 
 import orphanageView from '../views/orphanage_view';
-import * as Yup from 'yup';
 
-import Orphanage from '../models/Orphanage';
 import { OrphanagesService } from '../services'
 
 class OrphanagesController {
@@ -26,16 +23,21 @@ class OrphanagesController {
   }
 
   async show(req: Request, res: Response) {
-    const { id } = req.params;
-
-    const orphanagesRepository = getRepository(Orphanage);
-
-    //findOneOrFail = encontre um ou retorne falha
-    const orphanage = await orphanagesRepository.findOneOrFail(id, {
-      relations: ['images'],
-    });
-
-    return res.json(orphanageView.render(orphanage));
+    try {
+      const { id } = req.params;
+      const { result, status } = await OrphanagesService.show(id)
+      return res
+        .status(status)
+        .json(orphanageView.render(result));
+    } catch (error) {
+      return res
+        .status(error.status)
+        .send({
+          errorDetail: error,
+          errorResume: 'Erro na chamada do show',
+          message: 'CODE 57-A - Erro interno no servidor'
+        });
+    }
   }
 
   async create(request: Request, response: Response) {
@@ -49,12 +51,8 @@ class OrphanagesController {
       open_on_weekends,
     } = request.body;
 
-    const orphanagesRepository = getRepository(Orphanage);
-
     const requestImages = request.files as Express.Multer.File[];
-    const images = requestImages.map((image) => {
-      return { path: image.filename };
-    });
+    const images = requestImages.map(image => ({ path: image.filename }));
 
     const data = {
       name,
@@ -67,33 +65,9 @@ class OrphanagesController {
       images,
     };
 
-    // Criando a validação dos dados
-    const schema = Yup.object().shape({
-      name: Yup.string().required('Nome obrigatório'),
-      latitude: Yup.number().required(),
-      longitude: Yup.number().required(),
-      about: Yup.string().required().max(300),
-      instructions: Yup.string().required(),
-      opening_hours: Yup.string().required(),
-      open_on_weekends: Yup.boolean().required(),
-      images: Yup.array(
-        Yup.object().shape({
-          path: Yup.string().required(),
-        })
-      ),
-    });
+    const { result, status } = await OrphanagesService.create(data)
 
-    await schema.validate(data, {
-      abortEarly: false,
-    });
-
-    // criando orphanage
-    const orphanage = orphanagesRepository.create(data);
-
-    //salvando no banco de dados
-    await orphanagesRepository.save(orphanage);
-
-    return response.status(201).json(orphanage);
+    return response.status(status).json(result);
   }
 }
 
