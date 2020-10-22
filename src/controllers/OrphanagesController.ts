@@ -54,7 +54,6 @@ class OrphanagesController {
       const requestImages = req.files as Express.Multer.File[];
       const images = requestImages.map(image => ({ path: image.filename }));
 
-<<<<<<< HEAD
       const data = {
         name,
         latitude,
@@ -80,21 +79,6 @@ class OrphanagesController {
           message: 'CODE 58-A - Erro interno no servidor'
         });
     }
-=======
-    const data = {
-      name,
-      latitude,
-      longitude,
-      about,
-      instructions,
-      opening_hours,
-      open_on_weekends: open_on_weekends === 'true',
-      images,
-    };
-
-    const { result, status } = await OrphanagesService.create(data)
-    return response.status(status).json(result);
->>>>>>> b4b03064e138c6e710af0871e72cc9cc30ed2444
   }
 }
 
