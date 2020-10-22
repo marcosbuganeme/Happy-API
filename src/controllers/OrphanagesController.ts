@@ -40,7 +40,7 @@ class OrphanagesController {
     }
   }
 
-  async create(request: Request, response: Response) {
+  async create(req: Request, res: Response) {
     const {
       name,
       latitude,
@@ -49,25 +49,37 @@ class OrphanagesController {
       instructions,
       opening_hours,
       open_on_weekends,
-    } = request.body;
+    } = req.body;
 
-    const requestImages = request.files as Express.Multer.File[];
-    const images = requestImages.map(image => ({ path: image.filename }));
+    try {
+      const requestImages = req.files as Express.Multer.File[];
+      const images = requestImages.map(image => ({ path: image.filename }));
 
-    const data = {
-      name,
-      latitude,
-      longitude,
-      about,
-      instructions,
-      opening_hours,
-      open_on_weekends,
-      images,
-    };
+      const data = {
+        name,
+        latitude,
+        longitude,
+        about,
+        instructions,
+        opening_hours,
+        open_on_weekends,
+        images,
+      };
 
-    const { result, status } = await OrphanagesService.create(data)
+      const { result, status } = await OrphanagesService.create(data)
 
-    return response.status(status).json(result);
+      return res
+        .status(status)
+        .json(result);
+    } catch (error) {
+      return res
+        .status(error.status)
+        .send({
+          errorDetail: error,
+          errorResume: 'Erro na chamada do create',
+          message: 'CODE 58-A - Erro interno no servidor'
+        });
+    }
   }
 }
 
