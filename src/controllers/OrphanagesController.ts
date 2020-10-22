@@ -5,19 +5,26 @@ import orphanageView from '../views/orphanage_view';
 import * as Yup from 'yup';
 
 import Orphanage from '../models/Orphanage';
+import { OrphanagesService } from '../services'
 
-export default {
+class OrphanagesController {
   async index(req: Request, res: Response) {
-    const orphanagesRepository = getRepository(Orphanage);
+    try {
+      const { result, status } = await OrphanagesService.index()
+      return res
+        .status(status)
+        .json(orphanageView.renderMany(result));
+    } catch (error) {
+      return res
+        .status(error.status)
+        .send({
+          errorDetail: error,
+          errorResume: 'Erro na chamada do index',
+          message: 'CODE 56-A - Erro interno no servidor'
+        });
+    }
+  }
 
-    const orphanages = await orphanagesRepository.find({
-      relations: ['images'],
-    });
-
-    return res.json(orphanageView.renderMany(orphanages));
-  },
-
-  // retorna apenas um único orfanato
   async show(req: Request, res: Response) {
     const { id } = req.params;
 
@@ -29,7 +36,7 @@ export default {
     });
 
     return res.json(orphanageView.render(orphanage));
-  },
+  }
 
   async create(request: Request, response: Response) {
     const {
@@ -87,5 +94,7 @@ export default {
     await orphanagesRepository.save(orphanage);
 
     return response.status(201).json(orphanage);
-  },
-};
+  }
+}
+
+export default new OrphanagesController()
