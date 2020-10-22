@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 
 import orphanageView from '../views/orphanage_view';
-
 import { OrphanagesService } from '../services'
 
 class OrphanagesController {
@@ -61,12 +60,11 @@ class OrphanagesController {
       about,
       instructions,
       opening_hours,
-      open_on_weekends,
+      open_on_weekends: open_on_weekends === 'true',
       images,
     };
 
     const { result, status } = await OrphanagesService.create(data)
-
     return response.status(status).json(result);
   }
 }
