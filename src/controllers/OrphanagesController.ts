@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import { getRepository } from 'typeorm';
 
 import orphanageView from '../views/orphanage_view';
-import * as Yup from 'yup';
-
+import schemaOrphanage from '../schemas/schemaOrphanage';
 import Orphanage from '../models/Orphanage';
 import { OrphanagesService } from '../services'
 
@@ -63,27 +62,11 @@ class OrphanagesController {
       about,
       instructions,
       opening_hours,
-      open_on_weekends,
+      open_on_weekends: open_on_weekends === 'true',
       images,
     };
 
-    // Criando a validação dos dados
-    const schema = Yup.object().shape({
-      name: Yup.string().required('Nome obrigatório'),
-      latitude: Yup.number().required(),
-      longitude: Yup.number().required(),
-      about: Yup.string().required().max(300),
-      instructions: Yup.string().required(),
-      opening_hours: Yup.string().required(),
-      open_on_weekends: Yup.boolean().required(),
-      images: Yup.array(
-        Yup.object().shape({
-          path: Yup.string().required(),
-        })
-      ),
-    });
-
-    await schema.validate(data, {
+    await schemaOrphanage.validate(data, {
       abortEarly: false,
     });
 
